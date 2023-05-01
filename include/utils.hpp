@@ -3,7 +3,7 @@
 
 #include "defines.hpp"
 
-inline void clear_input(std::istream& in)
+inline void clear_istream(std::istream& in)
 {
     in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }

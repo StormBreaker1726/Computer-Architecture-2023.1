@@ -6,26 +6,29 @@
 #define COMPUTER_ARCHITECTURE_2023_1_TOMASULO_H
 
 #include "mips_types.hpp"
-
+#include "pipeline_phases.hpp"
+// fld, fsd, fadd.d, fsub.d, fmul.d, fdiv.d
 class Tomasulo
 {
-    public:
-        Tomasulo(){};
+private:
+    mips_byte_t instruction_memory[512];
 
-        void start(bool step_by_step = false);
-        void clear();
-        void load_instruction(std::istream&);
+public:
+    Tomasulo();
 
-    private:
-        void register_dump();
-        void memory_dump();
+    void start(bool step_by_step = false);
+    void clear();
+    void load_instruction(std::istream& input_file);
 
-        void instruction_fetch(mips_word_t);
-        void instruction_decode(mips_word_t);
-        void execution(mips_word_t);
-        void mem(mips_word_t);
-        void write_back(mips_word_t);
+private:
+    void register_dump();
+    void memory_dump();
+
+    void instruction_fetch(mips_word_t instruction);
+    void instruction_decode(mips_word_t instruction);
+    void execution(mips_word_t instruction);
+    void mem(mips_word_t instruction);
+    void write_back(mips_word_t instruction);
 };
 
-
-#endif //COMPUTER_ARCHITECTURE_2023_1_TOMASULO_H
+#endif  //COMPUTER_ARCHITECTURE_2023_1_TOMASULO_H
