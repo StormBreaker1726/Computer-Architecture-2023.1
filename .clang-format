@@ -1,5 +1,5 @@
 Language:        Cpp
-RemoveBracesLLVM: true
+RemoveBracesLLVM: false
 AlignConsecutiveMacros: AcrossEmptyLines
 AccessModifierOffset: -4
 AlignAfterOpenBracket: AlwaysBreak
@@ -23,9 +23,9 @@ BinPackParameters: true
 BreakBeforeBinaryOperators: None
 BreakBeforeBraces: Allman
 BreakBeforeInheritanceComma: false
-BreakBeforeTernaryOperators: true
+BreakBeforeTernaryOperators: false
 BreakConstructorInitializersBeforeComma: false
-ColumnLimit:     80
+ColumnLimit:     150
 CommentPragmas:  '^ IWYU pragma:'
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
 ConstructorInitializerIndentWidth: 4
@@ -64,7 +64,7 @@ ReferenceAlignment: Left
 ReflowComments:  false
 SortIncludes:    true
 SortUsingDeclarations: true
-SpaceAfterCStyleCast: false
+SpaceAfterCStyleCast: true
 SpaceAfterTemplateKeyword: true
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: ControlStatements

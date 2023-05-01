@@ -21,7 +21,7 @@ struct MEM
 
 struct EX
 {
-    mips_word_t RedDest;
+    mips_word_t RegDest;
     mips_word_t ALUSrc;
     mips_word_t ALUOp;
 };

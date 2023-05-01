@@ -15,7 +15,6 @@ void menu(Tomasulo& tomasulo)
 {
 #define EXIT_OPTION         0UL
 
-#define ARRAYSIZE(arr)      (sizeof(arr) / sizeof((arr)[0]))
 #define OPTION_IS_VALID(op) ((op) <= ARRAYSIZE(options))
 
     struct

@@ -5,14 +5,10 @@
 #ifndef COMPUTER_ARCHITECTURE_2023_1_TOMASULO_H
 #define COMPUTER_ARCHITECTURE_2023_1_TOMASULO_H
 
-#include "mips_types.hpp"
-#include "pipeline_phases.hpp"
+#include "Registers.hpp"
 // fld, fsd, fadd.d, fsub.d, fmul.d, fdiv.d
 class Tomasulo
 {
-private:
-    mips_byte_t instruction_memory[512];
-
 public:
     Tomasulo();
 
@@ -29,6 +25,17 @@ private:
     void execution(mips_word_t instruction);
     void mem(mips_word_t instruction);
     void write_back(mips_word_t instruction);
+
+    mips_byte_t instruction_memory[1024];
+    mips_byte_t data_memory[512];
+    mips_word_t registers[64];
+    mips_word_t pc;
+
+    Control _control;
+    IF_ID   _if_id;
+    ID_EX   _id_ex;
+    EX_MEM  _ex_mem;
+    MEM_WB  _mem_wb;
 };
 
 #endif  //COMPUTER_ARCHITECTURE_2023_1_TOMASULO_H
