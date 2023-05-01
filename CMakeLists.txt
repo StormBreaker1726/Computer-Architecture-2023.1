@@ -12,7 +12,6 @@ file(GLOB source_files
         "source/*.cpp"
         "include/*.h"
         "include/*.hpp"
-        "include/plf/*.h"
         )
 add_executable(taca ${source_files})
 
