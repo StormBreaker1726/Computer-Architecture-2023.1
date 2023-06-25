@@ -3,7 +3,8 @@
 
 #include "defines.hpp"
 
-#define ARRAYSIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+#define ARRAYSIZE(arr)     (sizeof(arr) / sizeof((arr)[0]))
+#define SIZE_IN_BITS(expr) (sizeof(expr) << 3)
 
 inline void clear_istream(std::istream& in)
 {

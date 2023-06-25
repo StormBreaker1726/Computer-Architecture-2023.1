@@ -7,7 +7,17 @@
 
 #include "Tomasulo/utils.hpp"
 #include "Registers.hpp"
-// fld, fsd, fadd.d, fsub.d, fmul.d, fdiv.d
+
+enum
+{
+    ADD,
+    SUB,
+    MULT,
+    DIV,
+    SW,
+    LW
+};
+
 class Tomasulo
 {
 private:
@@ -19,13 +29,13 @@ private:
 
     std::list<mips_word_t> instructions_queue;
 
-    std::vector<Line> load_buffer;
-    std::vector<Line> store_buffer;
+    std::vector<RSLine> load_buffer;
+    std::vector<RSLine> store_buffer;
 
     std::vector<RSLine> rs_add;
     std::vector<RSLine> rs_mult;
 
-    std::vector<std::string> register_status;
+    std::string register_status[64];
 
     Control _control;
     IF_ID   _if_id;
@@ -44,6 +54,7 @@ private:
     void register_dump();
     void memory_dump();
     void print_instruction_queue();
+    void print_reservation_stations();
 
     void issue();
     void execute();

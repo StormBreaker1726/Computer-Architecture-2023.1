@@ -55,10 +55,10 @@ def reg_name_to_reg_num(reg_name: str):
 def to_imm5(imm: int):
     # Length: 7
     # [31-25]
-    return (imm & 0x7F) << 25
+    return ((imm >> 5) & 0x7F) << 25
 
 def to_imm4(imm: int):
-    return to_rd(imm)
+    return (imm & 0x1F) << 7
 
 def to_imm(imm: int):
     # Length: 12
@@ -143,7 +143,7 @@ def make_instruction(instruction: int | str, comment: str | None):
         instruction = f"{instruction:032b}"
     if comment and len(comment) > 1:
         instruction = f"# {comment}\n{instruction}"
-    return instruction 
+    return instruction
 
 
 # =================== INSTRUCTIONS =================== #

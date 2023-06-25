@@ -13,6 +13,7 @@
 #include <list>
 #include <numeric>
 #include <queue>
+#include <stdexcept>
 #include <string>
 
 #endif /* ECD5488B_77E9_4952_BF32_63780EED4C62 */

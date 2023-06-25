@@ -7,11 +7,16 @@
 #include "menu.hpp"
 #include <fstream>
 
-int main(int argc, const char *argv[])
+int main()
 {
     Tomasulo t;
 
     std::ifstream input_file("./inputs/compiled/1");
+
+    if (!input_file.is_open()) {
+        std::cerr << "Falha ao arquivo de entrada\n";
+        return 1;
+    }
 
     t.load_instruction(input_file);
     t.start();
