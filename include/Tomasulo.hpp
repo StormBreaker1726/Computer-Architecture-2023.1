@@ -2,21 +2,11 @@
 // Created by joao-oliveira on 21/04/23.
 //
 
-#ifndef COMPUTER_ARCHITECTURE_2023_1_TOMASULO_H
-#define COMPUTER_ARCHITECTURE_2023_1_TOMASULO_H
+#pragma once
 
 #include "Tomasulo/utils.hpp"
 #include "Registers.hpp"
 
-enum
-{
-    ADD,
-    SUB,
-    MULT,
-    DIV,
-    SW,
-    LW
-};
 
 class Tomasulo
 {
@@ -66,5 +56,3 @@ private:
     void mem(mips_word_t instruction);
     void write_back(mips_word_t instruction);
 };
-
-#endif  //COMPUTER_ARCHITECTURE_2023_1_TOMASULO_H

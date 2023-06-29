@@ -2,8 +2,11 @@
 // Created by joao-oliveira on 21/04/23.
 //
 
-#include "Tomasulo.hpp"
 #include "utils.hpp"
+
+#include "Tomasulo.hpp"
+#include "Tomasulo/instructions.hpp"
+
 #include <string>
 
 #define RISCV_EOI 0
@@ -11,11 +14,6 @@
 #define R_OP_CODE 0x53
 #define S_OP_CODE 0x27
 #define I_OP_CODE 0x07
-
-static inline mips_word_t _read_word(mips_byte_t mem[], mips_word_t pos)
-{
-    return *((mips_word_t *) (mem + pos));
-}
 
 static inline mips_word_t opcode(mips_word_t instruction)
 {
@@ -140,9 +138,13 @@ void Tomasulo::issue()
         case ADD:
         case SUB:
         {
+#ifdef ARQ_DEBUG
             std::cout << __LINE__ << '\n';
+#endif
             std::string vj = this->register_status[rs1(instruction)];
+#ifdef ARQ_DEBUG
             std::cout << __LINE__ << '\n';
+#endif
             std::string vk = this->register_status[rs2(instruction)];
             std::string qj = "";
             std::string qk = "";
@@ -156,11 +158,15 @@ void Tomasulo::issue()
                 std::swap(vk, qk);
             }
 
+#ifdef ARQ_DEBUG
             std::cout << __LINE__ << '\n';
+#endif
             mips_word_t rd_value = rd(instruction);
             std::cout << "rd: " << rd_value << '\n';
             this->register_status[rd(instruction)] = "Add" + std::to_string(this->rs_add.size() + 1);
+#ifdef ARQ_DEBUG
             std::cout << __LINE__ << '\n';
+#endif
             this->rs_add.push_back({ true, i_type, vj, vk, qj, qk });
             break;
         }

@@ -1,5 +1,4 @@
-#ifndef F3482B3C_894C_459F_A2E6_C32AB776125D
-#define F3482B3C_894C_459F_A2E6_C32AB776125D
+#pragma once
 
 #include "defines.hpp"
 #include "mips_types.hpp"
@@ -81,5 +80,3 @@ struct MEM_WB
     mips_word_t dest_register;
     mips_word_t pc_plus_four;
 };
-
-#endif /* F3482B3C_894C_459F_A2E6_C32AB776125D */

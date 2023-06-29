@@ -6,7 +6,7 @@ static void not_yet_implemented(Tomasulo& t)
     std::cout << "Not yet implemented\n";
 }
 
-static std::ostream& print_error(const char *s, std::ostream& out = std::cout)
+static inline std::ostream& print_error(const char *s, std::ostream& out = std::cout)
 {
     return out << "******* " << s << " *******\n";
 }

@@ -1,5 +1,4 @@
-#ifndef D7E43EE3_989B_4725_8949_FF2382DF549E
-#define D7E43EE3_989B_4725_8949_FF2382DF549E
+#pragma once
 
 #include "defines.hpp"
 
@@ -12,5 +11,3 @@ inline void clear_istream(std::istream& in)
 }
 
 #define press_enter clear_istream
-
-#endif /* D7E43EE3_989B_4725_8949_FF2382DF549E */
