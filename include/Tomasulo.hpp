@@ -4,8 +4,9 @@
 
 #pragma once
 
+#include <list>
+
 #include "Tomasulo/utils.hpp"
-#include "Registers.hpp"
 
 class Tomasulo
 {
@@ -37,12 +38,6 @@ private:
     void issue();
     void execute();
     void write_result();
-
-    void instruction_fetch(mips_word_t instruction);
-    void instruction_decode(mips_word_t instruction);
-    void execution(mips_word_t instruction);
-    void mem(mips_word_t instruction);
-    void write_back(mips_word_t instruction);
 
     unsigned get_rs_for_instruction_type(mips_word_t i_type);
     ReservationStation& reservation_station(unsigned r);

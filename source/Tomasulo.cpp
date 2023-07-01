@@ -217,23 +217,3 @@ void Tomasulo::issue()
         this->instructions_queue.pop_front();
     }
 }
-
-void Tomasulo::instruction_fetch(mips_word_t instruction)
-{
-}
-
-void Tomasulo::instruction_decode(mips_word_t instruction)
-{
-}
-
-void Tomasulo::execution(mips_word_t instruction)
-{
-}
-
-void Tomasulo::mem(mips_word_t instruction)
-{
-}
-
-void Tomasulo::write_back(mips_word_t instruction)
-{
-}
