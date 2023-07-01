@@ -18,8 +18,7 @@ int main()
         return 1;
     }
 
-    t.load_instruction(input_file);
+    t.load_instructions(input_file);
     t.start();
-
     return 0;
 }

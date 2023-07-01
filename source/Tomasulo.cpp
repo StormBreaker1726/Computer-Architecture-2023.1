@@ -37,7 +37,7 @@ static inline mips_word_t rs2(mips_word_t instruction)
     return (instruction >> 20) & 0x1F;
 }
 
-static inline mips_word_t rd(mips_word_t instruction)
+static inline mips_word_t instruction_rd(mips_word_t instruction)
 {
     /* rd: [11-7] */
     return (instruction >> 7) & 0x1F;
@@ -78,10 +78,6 @@ static int instruction_type(mips_word_t instruction)
 
 Tomasulo::Tomasulo()
 {
-    this->load_buffer.reserve(5);
-    this->store_buffer.reserve(5);
-    this->rs_add.reserve(3);
-    this->rs_mult.reserve(2);
 }
 
 void Tomasulo::start(bool step_by_step)
@@ -105,18 +101,18 @@ void Tomasulo::start(bool step_by_step)
 
 void Tomasulo::clear()
 {
-#define MEMSET(arr, value) memset((void *) (arr), value, sizeof(arr))
-    MEMSET(this->instruction_memory, 0);
-    MEMSET(this->registers, 0);
+#define CLEAR(arr) memset((void *) (arr), 0, sizeof(arr))
+    CLEAR(this->instruction_memory);
+    CLEAR(this->registers);
+    CLEAR(this->register_status);
 }
 
-void Tomasulo::load_instruction(std::istream& input_file)
+void Tomasulo::load_instructions(std::istream& input_file)
 {
     std::string line;
-
     mips_word_t *write_ptr = (mips_word_t *) (this->instruction_memory);
-    this->clear();
 
+    this->clear();
     while (std::getline(input_file, line))
     {
         if (!line.empty() && line.front() != '#')
@@ -127,118 +123,103 @@ void Tomasulo::load_instruction(std::istream& input_file)
     *write_ptr = RISCV_EOI;
 }
 
-void Tomasulo::issue()
+unsigned Tomasulo::get_rs_for_instruction_type(mips_word_t i_type)
 {
-    mips_word_t instruction = this->instructions_queue.front();
-    mips_word_t i_type = instruction_type(instruction);
+    unsigned lower, upper;
 
-    std::cerr << "Issue begin\n";
-    this->instructions_queue.pop_front();
-    switch (i_type) {
+    switch (i_type)
+    {
+        case LW:
+        case SW:
+            lower = 0, upper = 2;
+            break;
         case ADD:
         case SUB:
-        {
-#ifdef ARQ_DEBUG
-            std::cout << __LINE__ << '\n';
-#endif
-            std::string vj = this->register_status[rs1(instruction)];
-#ifdef ARQ_DEBUG
-            std::cout << __LINE__ << '\n';
-#endif
-            std::string vk = this->register_status[rs2(instruction)];
-            std::string qj = "";
-            std::string qk = "";
-
-            if (vj != "")
-            {
-                std::swap(vj, qj);
-            }
-            if (vk != "")
-            {
-                std::swap(vk, qk);
-            }
-
-#ifdef ARQ_DEBUG
-            std::cout << __LINE__ << '\n';
-#endif
-            mips_word_t rd_value = rd(instruction);
-            std::cout << "rd: " << rd_value << '\n';
-            this->register_status[rd(instruction)] = "Add" + std::to_string(this->rs_add.size() + 1);
-#ifdef ARQ_DEBUG
-            std::cout << __LINE__ << '\n';
-#endif
-            this->rs_add.push_back({ true, i_type, vj, vk, qj, qk });
+            lower = 2, upper = 5;
             break;
-        }
         case DIV:
         case MULT:
-        {
-            std::string vj = this->register_status[rs1(instruction)];
-            std::string vk = this->register_status[rs2(instruction)];
-            std::string qj = "";
-            std::string qk = "";
-
-            if (vj != "")
-            {
-                std::swap(vj, qj);
-            }
-            if (vk != "")
-            {
-                std::swap(vk, qk);
-            }
-
-            this->register_status[rd(instruction)] = "Mult" + std::to_string(this->rs_mult.size() + 1);
-            this->rs_mult.push_back({ true, i_type, vj, vk, qj, qk });
+            lower = 5, upper = 7;
             break;
-        }
-        case SW:
-        {
-            std::string vj = this->register_status[rs1(instruction)];
-            std::string vk = this->register_status[rs2(instruction)];
-            std::string qj = "";
-            std::string qk = "";
-
-            if (vj != "")
-            {
-                std::swap(vj, qj);
-            }
-            if (vk != "")
-            {
-                std::swap(vk, qk);
-            }
-
-            this->store_buffer.push_back({ true, i_type, vj, vk, qj, qk });
-            break;
-        }
-        case LW:
-        {
-            std::string vj = this->register_status[rs1(instruction)];
-            std::string vk = this->register_status[rs2(instruction)];
-            std::string qj = "";
-            std::string qk = "";
-
-            if (vj != "")
-            {
-                std::swap(vj, qj);
-            }
-            if (vk != "")
-            {
-                std::swap(vk, qk);
-            }
-
-            this->load_buffer.push_back({ true, i_type, vj, vk, qj, qk });
-            break;
-        }
         default:
             throw std::invalid_argument(__FUNCTION__);
     }
-    std::cerr << "Issue end\n";
+
+    for (unsigned i = lower; i < upper; ++i)
+    {
+        if (!this->_reservation_station[i].busy)
+            return i + 1;
+    }
+    return 0;
+}
+
+ReservationStation& Tomasulo::reservation_station(unsigned r)
+{
+    return this->_reservation_station[r - 1];
+}
+
+void Tomasulo::issue()
+{
+    mips_word_t instruction = this->instructions_queue.front();
+    mips_word_t i_type      = instruction_type(instruction);
+    unsigned    r           = this->get_rs_for_instruction_type(i_type);
+
+    if (r) {
+        mips_word_t rs, rt, rd;
+
+        switch (i_type) {
+            case ADD:
+            case SUB:
+            case MULT:
+            case DIV:
+                rs = rs1(instruction);
+                rt = rs2(instruction);
+                rd = instruction_rd(instruction);
+
+                if (this->register_status[rs]) {
+                    this->reservation_station(r).qj = this->register_status[rs];
+                } else {
+                    this->reservation_station(r).vj = this->registers[rs];
+                    this->reservation_station(r).qj = 0;
+                }
+
+                if (this->register_status[rt]) {
+                    this->reservation_station(r).qk = this->register_status[rt];
+                } else {
+                    this->reservation_station(r).vk = this->registers[rt];
+                    this->reservation_station(r).qk = 0;
+                }
+                this->register_status[rd] = r;
+                break;
+            case LW:
+            case SW:
+                if (this->register_status[rs]) {
+                    this->reservation_station(r).qj = this->register_status[rs];
+                } else {
+                    this->reservation_station(r).vj = this->registers[rs];
+                    this->reservation_station(r).qj = 0;
+                }
+                // this->reservation_station(r).a = immediate
+
+                if (i_type == LW) {
+                    this->register_status[rt] = r;
+                } else {
+                    if (this->register_status[rt]) {
+                        this->reservation_station(r).qk = this->register_status[rt];
+                    } else {
+                        this->reservation_station(r).vk = this->registers[rt];
+                        this->reservation_station(r).qk = 0;
+                    }
+                }
+                break;
+        }
+        this->reservation_station(r).busy = true;
+        this->instructions_queue.pop_front();
+    }
 }
 
 void Tomasulo::instruction_fetch(mips_word_t instruction)
 {
-    this->_if_id.instruction  = instruction;
-    this->_if_id.pc_plus_four = this->pc;
 }
 
 void Tomasulo::instruction_decode(mips_word_t instruction)

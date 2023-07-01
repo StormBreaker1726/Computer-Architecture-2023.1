@@ -8,17 +8,13 @@ inline mips_word_t _read_word(mips_byte_t mem[], mips_word_t pos)
     return *((mips_word_t *) (mem + pos));
 }
 
-struct Line {
-    bool busy;
-    std::string address;
-};
-
 /* Reservation station line */
-struct RSLine {
+struct ReservationStation {
     bool busy;
     mips_word_t operation;
-    std::string vj;
-    std::string vk;
-    std::string qj;
-    std::string qk;
+    mips_word_t vj;
+    mips_word_t vk;
+    mips_word_t qj;
+    mips_word_t qk;
+    mips_word_t a;
 };
