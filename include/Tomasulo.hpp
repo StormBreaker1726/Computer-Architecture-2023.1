@@ -4,9 +4,10 @@
 
 #pragma once
 
-#include <list>
-
 #include "Tomasulo/utils.hpp"
+#include "Tomasulo/instructions.hpp"
+
+#include <list>
 
 class Tomasulo
 {
@@ -16,7 +17,7 @@ private:
     mips_word_t registers[64];
     mips_word_t register_status[64];
     mips_word_t pc;
-    size_t clock;
+    unsigned clock_cycle;
 
     std::list<mips_word_t> instructions_queue;
 
@@ -39,6 +40,8 @@ private:
     void execute();
     void write_result();
 
-    unsigned get_rs_for_instruction_type(mips_word_t i_type);
+    void initialize_instruction_queue();
+
+    unsigned get_rs_num_for_instruction_type(InstructionType i_type);
     ReservationStation& reservation_station(unsigned r);
 };

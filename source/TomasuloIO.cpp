@@ -12,30 +12,25 @@ static const char *const registers_name[] = {
     "f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23", "f24", "f25", "f26", "f27", "f28", "f29", "f30", "f31",
 };
 
-static const char *operation_name(mips_word_t op_num)
-{
-    switch (op_num) {
-        case ADD:
-            return "ADD";
-        case SUB:
-            return "SUB";
-        case MULT:
-            return "MULT";
-        case DIV:
-            return "DIV";
-        case SW:
-            return "SW";
-        case LW:
-            return "LW";
-        default:
-            throw std::invalid_argument(__FUNCTION__);
-    }
-}
+static const char *const reservation_station_names[7] = { "Load1", "Load2", "Add1", "Add2", "Add3", "Mult1", "Mult2" };
 
-static void print_rs_line(const RSLine& line)
+static const char *get_instruction_name(InstructionType type)
 {
-    std::cout << "\t" << line.busy << "\t" << operation_name(line.operation) << "\t" << line.vj << "\t" << line.vk << "\t" << line.qj << "\t"
-              << line.qk << "\n";
+    switch (type) {
+        case InstructionType::ADD:
+            return "ADD";
+        case InstructionType::SUB:
+            return "SUB";
+        case InstructionType::MULT:
+            return "MULT";
+        case InstructionType::DIV:
+            return "DIV";
+        case InstructionType::SW:
+            return "SW";
+        case InstructionType::LW:
+            return "LW";
+    }
+    return "";
 }
 
 void Tomasulo::register_dump()
@@ -67,28 +62,16 @@ void Tomasulo::print_instruction_queue()
 
 void Tomasulo::print_reservation_stations()
 {
-    size_t rs_num = 1;
-    std::cout << "Name\tBusy\tOp\tVj\tVk\tQj\tQk\n";
-    for (const auto& line : this->rs_add) {
-        std::cout << "Add" << rs_num++;
-        print_rs_line(line);
-    }
+    extern const char *const reservation_station_names[];
 
-    rs_num = 1;
-    for (const auto& line: this->rs_mult) {
-        std::cout << "Mult" << rs_num++;
-        print_rs_line(line);
-    }
+    std::cout << "====================== RESERVATION STATION ======================\n";
+    std::cout << "Name\tBusy\tOp\tVj\tVk\tQj\tQk\tAddress\n";
+    std::cout << "-----------------------------------------------------------------\n";
+    for (size_t i = 0; i < ARRAYSIZE(this->_reservation_station); ++i) {
+        const ReservationStation& rs = this->_reservation_station[i];
 
-    rs_num = 1;
-    for (const auto& line: this->load_buffer) {
-        std::cout << "Mult" << rs_num++;
-        print_rs_line(line);
+        std::cout << reservation_station_names[i] << '\t' << rs.busy << '\t' << get_instruction_name(rs.operation) << '\t' << rs.vj << '\t' << rs.vk
+                  << '\t' << rs.qj << '\t' << rs.qk << '\t' << rs.a << '\n';
     }
-
-    rs_num = 1;
-    for (const auto& line: this->store_buffer) {
-        std::cout << "Store" << rs_num++;
-        print_rs_line(line);
-    }
+    std::cout << "=================================================================\n";
 }
