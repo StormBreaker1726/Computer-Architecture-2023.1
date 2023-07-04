@@ -2,7 +2,7 @@
 // Created by joao-oliveira on 21/04/23.
 //
 
-#include "defines.hpp"
+#include "utils.hpp"
 
 #include "Tomasulo.hpp"
 #include "Tomasulo/instructions.hpp"
@@ -49,13 +49,18 @@ void Tomasulo::start(bool step_by_step)
     execution_ended   = false;
     this->initialize_instruction_queue();
     do {
-        // execute instructions in instruction queue
+        this->execute();
+        // execute instructions in execution queue
         if (!this->instructions_queue.empty()) {
             this->issue();
         } else {
             execution_ended = true;
         }
         // write back
+        if (step_by_step) {
+            press_enter();
+        }
+        ++this->clock_cycle;
     } while (!execution_ended);
 }
 

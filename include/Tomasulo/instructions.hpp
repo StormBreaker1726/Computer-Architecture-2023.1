@@ -58,7 +58,7 @@ inline InstructionType type_from_funct(mips_word_t instruction)
     throw std::invalid_argument(__FUNCTION__);
 }
 
-static InstructionType instruction_type(mips_word_t instruction)
+inline InstructionType instruction_type(mips_word_t instruction)
 {
     OpCode opcode = static_cast<OpCode>(instruction_opcode(instruction));
 

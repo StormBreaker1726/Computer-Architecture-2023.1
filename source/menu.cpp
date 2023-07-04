@@ -3,6 +3,7 @@
 
 static void not_yet_implemented(Tomasulo& t)
 {
+    ((void) t);
     std::cout << "Not yet implemented\n";
 }
 

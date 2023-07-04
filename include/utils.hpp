@@ -10,4 +10,4 @@ inline void clear_istream(std::istream& in)
     in.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
-#define press_enter clear_istream
+#define press_enter() clear_istream(std::cin)
