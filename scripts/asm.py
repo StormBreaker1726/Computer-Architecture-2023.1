@@ -52,58 +52,55 @@ def reg_name_to_reg_num(reg_name: str):
     reg_num = REGISTERS[reg_name]
     return reg_num
 
-def to_imm5(imm: int):
-    # Length: 7
-    # [31-25]
-    return ((imm >> 5) & 0x7F) << 25
+def to_s_imm(imm: int):
+    # Divided in two parts:
+    # Length 7 (31-25)
+    imm_11_5 = (imm & 0x7F) << 25
+    # Length 5 (11-7)
+    imm_4_0 = imm & 0x1F << 7
+    return imm_11_5 | imm_4_0
 
-def to_imm4(imm: int):
-    return (imm & 0x1F) << 7
-
-def to_imm(imm: int):
-    # Length: 12
-    # [31-20]
+def to_i_imm(imm: int):
+    # Length: 12 (31-20)
     return (imm & 0xFFF) << 20
 
 def to_rs1(rs1: int):
-    # Length: 5
-    # [19-15]
+    # Length: 5 (19-15)
     return (rs1 & 0x1F) << 15
 
 def to_rs2(rs2: int):
-    # Length: 5
-    # [24-20]: 
+    # Length: 5 (24-20)
     return (rs2 & 0x1F) << 20
 
 def to_funct7(funct7: int):
-    return to_imm5(funct7)
+    # Length 7 (31-25)
+    return (funct7 & 0x7F) << 25
 
 def to_funct3(funct3: int):
-    # Length: 3
-    # [14-12]
+    # Length: 3 (14-12)
     return (funct3 & 0x7) << 12
 
 def to_rd(rd: int):
-    # Length: 5
-    # [11-7]
+    # Length: 5 (11-7)
     return (rd & 0x1F) << 7
 
 def to_opcode(opcode: int):
-    # Length: 7
-    # [6 - 0]
+    # Length: 7 (6 - 0)
     return opcode & 0x7F
 
 def r_instruction(funct7, rs2, rs1, funct3, rd, opcode):
     return to_funct7(funct7) | to_rs2(rs2) | to_rs1(rs1) | to_funct3(funct3) | to_rd(rd) | to_opcode(opcode)
 
 def i_instruction(imm, rs1, funct3, rd, opcode):
-    return to_imm(imm) | to_rs1(rs1) | to_funct3(funct3) | to_rd(rd) | to_opcode(opcode)
+    return to_i_imm(imm) | to_rs1(rs1) | to_funct3(funct3) | to_rd(rd) | to_opcode(opcode)
 
-def s_instruction(imm5, rs2, rs1, funct3, imm4, opcode):
-    return to_imm5(imm5) | to_rs2(rs2) | to_rs1(rs1) | to_funct3(funct3) | to_imm4(imm4) | to_opcode(opcode)
+def s_instruction(imm, rs2, rs1, funct3, opcode):
+    return to_s_imm(imm) | to_rs2(rs2) | to_rs1(rs1) | to_funct3(funct3) | to_opcode(opcode)
 
 def fld_bin(rd, rs1, offset):
+    print(f"rd: {rd}")
     rd     = reg_name_to_reg_num(rd)
+    print(f"rd number: {rd}")
     rs1    = reg_name_to_reg_num(rs1)
     offset = int(offset)
     return i_instruction(offset, rs1, 0x3, rd, 0x7)
@@ -112,7 +109,7 @@ def fsd_bin(rs2, offset, rs1):
     rs2    = reg_name_to_reg_num(rs2)
     offset = int(offset)
     rs1    = reg_name_to_reg_num(rs1)
-    return s_instruction(offset, rs2, rs1, offset, 0x3, 0x27)
+    return s_instruction(offset, rs2, rs1, 0x3, 0x27)
 
 def fadd_d_bin(rd, rs1, rs2):
     rd  = reg_name_to_reg_num(rd)
@@ -180,23 +177,24 @@ def fmul_d(arguments):
 def fdiv_d(arguments):
     [rd, rs1, rs2]  = arguments
     instruction_bin = fdiv_d_bin(rd, rs1, rs2)
-    comment         = f"fmul.d {rd}, {rs1}, {rs2}"
+    comment         = f"fdiv.d {rd}, {rs1}, {rs2}"
     return make_instruction(instruction_bin, comment)
 
 # ===================================================== #
-def if_none_throw(v):
-    if v is None:
-        raise TypeError()
-    return v
+def get_or_throw(map, key):
+    value = map.get(key)
+    if value is None:
+        raise TypeError(f"Field `{key}` is not defined")
+    return value
 
 def instruction_info_get_argument_regex(instruction_info):
-    return if_none_throw(instruction_info.get("argument-regex"))
+    return get_or_throw(instruction_info, "argument-regex")
 
 def instruction_info_get_argument_split(instruction_info):
-    return if_none_throw(instruction_info.get("argument-split"))
+    return get_or_throw(instruction_info, "argument-split")
 
 def instruction_info_get_to_bin(instruction_info):
-    return if_none_throw(instruction_info.get("to-bin"))
+    return get_or_throw(instruction_info, "to-bin")
 
 def asm(input_file, output_file):
     instructions_info_table = {
@@ -216,17 +214,17 @@ def asm(input_file, output_file):
             "to-bin": fadd_d,
         },
         "fsub.d": {
-            "agument-regex": FSUB_D_ARGS_REGEX,
+            "argument-regex": FSUB_D_ARGS_REGEX,
             "argument-split": comma_split,
             "to-bin": fsub_d,
         },
         "fmul.d": {
-            "agument-regex": FMUL_D_ARGS_REGEX,
+            "argument-regex": FMUL_D_ARGS_REGEX,
             "argument-split": comma_split,
             "to-bin": fmul_d,
         },
         "fdiv.d": {
-            "agument-regex": FDIV_D_ARGS_REGEX,
+            "argument-regex": FDIV_D_ARGS_REGEX,
             "argument-split": comma_split,
             "to-bin": fdiv_d,
         },

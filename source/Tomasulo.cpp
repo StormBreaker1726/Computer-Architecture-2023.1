@@ -12,6 +12,9 @@
 
 #define RISCV_EOI 0
 
+// TODO(igolt): considerar offset ao tomar os registradores nas operações
+#define FP_REG_OFFSET 32
+
 Tomasulo::Tomasulo(std::ostream& outstream):
     out(outstream)
 {

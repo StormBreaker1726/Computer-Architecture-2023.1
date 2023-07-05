@@ -1,5 +1,5 @@
-fld    f6, 34(x2)
-fld    f2, 44(x3)
+fld    f6, x2, 34
+fld    f2, x3, 45
 fmul.d f0, f2, f4
 fsub.d f8, f2, f6
 fdiv.d f0, f0, f6
