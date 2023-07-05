@@ -98,9 +98,7 @@ def s_instruction(imm, rs2, rs1, funct3, opcode):
     return to_s_imm(imm) | to_rs2(rs2) | to_rs1(rs1) | to_funct3(funct3) | to_opcode(opcode)
 
 def fld_bin(rd, rs1, offset):
-    print(f"rd: {rd}")
     rd     = reg_name_to_reg_num(rd)
-    print(f"rd number: {rd}")
     rs1    = reg_name_to_reg_num(rs1)
     offset = int(offset)
     return i_instruction(offset, rs1, 0x3, rd, 0x7)
