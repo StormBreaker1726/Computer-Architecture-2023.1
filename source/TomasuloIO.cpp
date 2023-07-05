@@ -39,8 +39,10 @@ void Tomasulo::register_dump()
 
     this->out << "============== REGISTERS ==============\n";
     this->out << "Name\tQi\tValue\n";
-    for (mips_word_t i = 0; i < ARRAYSIZE(this->registers); i++)
-        this->out << registers_name[i] << "\t" << this->register_status[i] << '\t' << (mips_int_t) this->registers[i] << '\n';
+    for (unsigned i = 0; i < Tomasulo::FP_REG_OFFSET; i++)
+        this->out << registers_name[i] << "\t" << this->register_status[i] << '\t' << this->registers[i] << '\n';
+    for (unsigned i = Tomasulo::FP_REG_OFFSET; i < ARRAYSIZE(this->registers); ++i)
+        this->out << registers_name[i] << '\t' << this->register_status[i] << '\t' << interpret_word_as_float(this->registers[i]) << '\n';
     this->out << "=======================================\n";
 }
 

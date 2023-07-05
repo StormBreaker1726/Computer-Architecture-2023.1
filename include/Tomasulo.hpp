@@ -11,6 +11,9 @@
 
 class Tomasulo
 {
+public:
+    static const unsigned FP_REG_OFFSET = 32;
+
 private:
     mips_byte_t instruction_memory[1024];
     mips_byte_t data_memory[512];
