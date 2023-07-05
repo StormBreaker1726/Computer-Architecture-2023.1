@@ -13,7 +13,7 @@
 #define RISCV_EOI 0
 
 // TODO(igolt): considerar offset ao tomar os registradores nas operações
-#define FP_REG_OFFSET 32
+#define RISCV_FP_REG_OFFSET 32
 
 Tomasulo::Tomasulo(std::ostream& outstream):
     out(outstream)
@@ -101,13 +101,15 @@ void Tomasulo::issue()
 
         rs = instruction_rs1(instruction);
         rt = instruction_rs2(instruction);
-        rd = instruction_rd(instruction);
+        rd = instruction_rd(instruction) + RISCV_FP_REG_OFFSET;
         switch (i_type)
         {
             case InstructionType::ADD:
             case InstructionType::SUB:
             case InstructionType::MULT:
             case InstructionType::DIV:
+                rs += RISCV_FP_REG_OFFSET;
+                rt += RISCV_FP_REG_OFFSET;
 
                 if (this->register_status[rs])
                 {
@@ -132,6 +134,7 @@ void Tomasulo::issue()
                 break;
             case InstructionType::LW:
             case InstructionType::SW:
+
                 if (this->register_status[rs])
                 {
                     this->reservation_station(r).qj = this->register_status[rs];
