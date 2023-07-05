@@ -267,10 +267,10 @@ bool Tomasulo::reservation_station_is_empty()
 
 void Tomasulo::write_fp_to_memory(mips_float_t f, mips_word_t address)
 {
-    *reinterpret_cast<mips_word_t *>(this->data_memory[address]) = *reinterpret_cast<mips_word_t *>(&f);
+    *reinterpret_cast<mips_word_t *>(&this->data_memory[address]) = *reinterpret_cast<mips_word_t *>(&f);
 }
 
 mips_float_t Tomasulo::read_fp_from_memory(mips_word_t address)
 {
-    return *reinterpret_cast<mips_float_t *>(this->data_memory[address]);
+    return *reinterpret_cast<mips_float_t *>(&this->data_memory[address]);
 }
