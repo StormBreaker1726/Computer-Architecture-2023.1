@@ -7,6 +7,23 @@
 enum class InstructionType { ADD = 1, SUB, MULT, DIV, SW, LW };
 enum class OpCode { R = 0x53, S = 0x27, I = 0x07 };
 
+inline unsigned instruction_execution_cycles(InstructionType type)
+{
+    switch (type) {
+        case InstructionType::ADD:
+        case InstructionType::SUB:
+            return 2;
+        case InstructionType::MULT:
+            return 8;
+        case InstructionType::DIV:
+            return 40;
+        case InstructionType::LW:
+        case InstructionType::SW:
+            return 1;
+    }
+    throw std::invalid_argument(__FUNCTION__);
+}
+
 inline mips_word_t instruction_opcode(mips_word_t instruction)
 {
     return instruction & 0x7f;

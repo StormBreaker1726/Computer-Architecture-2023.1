@@ -37,18 +37,19 @@ void Tomasulo::register_dump()
 {
     extern const char *const registers_name[];
 
-    std::cout << "============== REGISTERS ==============\n";
+    this->out << "============== REGISTERS ==============\n";
+    this->out << "Name\tQi\tValue\n";
     for (mips_word_t i = 0; i < ARRAYSIZE(this->registers); i++)
-        std::cout << "* " << registers_name[i] << ": " << (mips_int_t) this->registers[i] << '\n';
-    std::cout << "=======================================\n";
+        this->out << registers_name[i] << "\t" << this->register_status[i] << '\t' << (mips_int_t) this->registers[i] << '\n';
+    this->out << "=======================================\n";
 }
 
 void Tomasulo::memory_dump()
 {
-    std::cout << "=============== MEMORY ===============\n";
+    this->out << "=============== MEMORY ===============\n";
     for (mips_word_t i = 0; i < ARRAYSIZE(this->data_memory); i += 4)
-        std::cerr << i << ": " << (mips_int_t) _read_word(this->data_memory, i) << '\n';
-    std::cout << "=======================================\n";
+        this->out << i << ": " << (mips_int_t) _read_word(this->data_memory, i) << '\n';
+    this->out << "=======================================\n";
 }
 
 void Tomasulo::print_instruction_queue()
@@ -56,22 +57,22 @@ void Tomasulo::print_instruction_queue()
     for (auto& instruction : this->instructions_queue) {
         std::bitset<SIZE_IN_BITS(mips_word_t)> bin(instruction);
 
-        std::cout << bin << '\n';
+        this->out << bin << '\n';
     }
 }
 
-void Tomasulo::print_reservation_stations()
+void Tomasulo::reservation_station_dump()
 {
     extern const char *const reservation_station_names[];
 
-    std::cout << "====================== RESERVATION STATION ======================\n";
-    std::cout << "Name\tBusy\tOp\tVj\tVk\tQj\tQk\tAddress\n";
-    std::cout << "-----------------------------------------------------------------\n";
+    this->out << "====================== RESERVATION STATION ======================\n";
+    this->out << "Name\tBusy\tOp\tVj\tVk\tQj\tQk\tAddress\tCycles\n";
+    this->out << "-----------------------------------------------------------------\n";
     for (size_t i = 0; i < ARRAYSIZE(this->_reservation_station); ++i) {
         const ReservationStation& rs = this->_reservation_station[i];
 
-        std::cout << reservation_station_names[i] << '\t' << rs.busy << '\t' << get_instruction_name(rs.operation) << '\t' << rs.vj << '\t' << rs.vk
-                  << '\t' << rs.qj << '\t' << rs.qk << '\t' << rs.a << '\n';
+        this->out << reservation_station_names[i] << '\t' << rs.busy << '\t' << get_instruction_name(rs.operation) << '\t' << rs.vj << '\t' << rs.vk
+                  << '\t' << rs.qj << '\t' << rs.qk << '\t' << rs.a << '\t' << rs.cycles_executing << '\n';
     }
-    std::cout << "=================================================================\n";
+    this->out << "=================================================================\n";
 }

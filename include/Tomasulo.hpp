@@ -23,8 +23,10 @@ private:
 
     ReservationStation _reservation_station[7];
 
+    std::ostream& out;
+
 public:
-    Tomasulo();
+    Tomasulo(std::ostream& out);
 
     void start(bool step_by_step = false);
     void clear();
@@ -34,7 +36,7 @@ private:
     void register_dump();
     void memory_dump();
     void print_instruction_queue();
-    void print_reservation_stations();
+    void reservation_station_dump();
 
     void issue();
     void execute();
@@ -42,6 +44,10 @@ private:
 
     void initialize_instruction_queue();
 
+    mips_word_t get_reservation_station_result(const ReservationStation& rs);
+
     unsigned get_rs_num_for_instruction_type(InstructionType i_type);
     ReservationStation& reservation_station(unsigned r);
+
+    bool reservation_station_is_empty();
 };

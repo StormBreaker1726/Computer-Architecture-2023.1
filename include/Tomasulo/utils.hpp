@@ -14,6 +14,9 @@ struct ReservationStation {
     mips_word_t qj;
     mips_word_t qk;
     mips_word_t a;
+
+    // Execution info
+    unsigned cycles_executing;
 };
 
 inline mips_word_t _read_word(mips_byte_t mem[], mips_word_t pos)

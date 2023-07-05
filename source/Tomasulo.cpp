@@ -2,6 +2,7 @@
 // Created by joao-oliveira on 21/04/23.
 //
 
+#include "Tomasulo/utils.hpp"
 #include "utils.hpp"
 
 #include "Tomasulo.hpp"
@@ -11,7 +12,8 @@
 
 #define RISCV_EOI 0
 
-Tomasulo::Tomasulo()
+Tomasulo::Tomasulo(std::ostream& outstream):
+    out(outstream)
 {
     this->clear();
 }
@@ -43,36 +45,44 @@ void Tomasulo::load_instructions(std::istream& input_file)
 
 void Tomasulo::start(bool step_by_step)
 {
-    bool execution_ended;
-
     this->clock_cycle = 1;
-    execution_ended   = false;
     this->initialize_instruction_queue();
     do {
         this->execute();
-        // execute instructions in execution queue
         if (!this->instructions_queue.empty()) {
             this->issue();
-        } else {
-            execution_ended = true;
         }
-        // write back
+        this->write_result();
+
+        this->out << "\nClock cycle: " << this->clock_cycle << '\n';
+        this->memory_dump();
+        this->register_dump();
+        this->reservation_station_dump();
         if (step_by_step) {
             press_enter();
         }
         ++this->clock_cycle;
-    } while (!execution_ended);
+    } while (!this->instructions_queue.empty() || !this->reservation_station_is_empty());
 }
 
 void Tomasulo::initialize_instruction_queue()
 {
     mips_word_t instruction;
 
-    this->pc    = 0;
+    this->pc = 0;
     while ((instruction = _read_word(this->instruction_memory, this->pc)) != RISCV_EOI)
     {
         this->instructions_queue.push_back(instruction);
         this->pc += 4;
+    }
+}
+
+void Tomasulo::execute()
+{
+    for (ReservationStation& rs : this->_reservation_station) {
+        if (rs.busy && rs.qj == 0 && rs.qk == 0) {
+            ++rs.cycles_executing;
+        }
     }
 }
 
@@ -82,7 +92,7 @@ void Tomasulo::issue()
     InstructionType i_type      = instruction_type(instruction);
     unsigned        r           = this->get_rs_num_for_instruction_type(i_type);
 
-    if (r)
+    if (r != 0)
     {
         mips_word_t rs, rt, rd;
 
@@ -149,10 +159,61 @@ void Tomasulo::issue()
                 }
                 break;
         }
-        this->reservation_station(r).busy = true;
-        this->reservation_station(r).operation = i_type;
+        this->reservation_station(r).busy             = true;
+        this->reservation_station(r).operation        = i_type;
+        this->reservation_station(r).cycles_executing = 0;
         this->instructions_queue.pop_front();
     }
+}
+
+void Tomasulo::write_result()
+{
+    unsigned rs_num;
+    for (rs_num = 1; rs_num <= ARRAYSIZE(this->_reservation_station); ++rs_num) {
+        ReservationStation& rs = this->reservation_station(rs_num);
+
+        if (rs.busy && rs.cycles_executing >= instruction_execution_cycles(rs.operation)) {
+            mips_word_t result = this->get_reservation_station_result(rs);
+            rs.busy = false;
+
+            for (ReservationStation& rs2 : this->_reservation_station) {
+                if (rs2.busy) {
+                    if (rs2.qk == rs_num) {
+                        rs2.qk = 0;
+                        rs2.vk = result;
+                    } else if (rs2.qj == rs_num) {
+                        rs2.qj = 0;
+                        rs2.vj = result;
+                    }
+                }
+            }
+            for (unsigned i = 0; i < ARRAYSIZE(this->register_status); ++i) {
+                if (this->register_status[i] == rs_num) {
+                    this->registers[i] = result;
+                    this->register_status[i] = 0;
+                }
+            }
+        }
+    }
+}
+
+mips_word_t Tomasulo::get_reservation_station_result(const ReservationStation& rs)
+{
+    switch (rs.operation) {
+        case InstructionType::ADD:
+            return rs.vj + rs.vk;
+        case InstructionType::SUB:
+            return rs.vj - rs.vk;
+        case InstructionType::MULT:
+            return rs.vj * rs.vk;
+        case InstructionType::DIV:
+            return rs.vj / rs.vk;
+        case InstructionType::LW:
+            return _read_word(this->data_memory, rs.a);
+        case InstructionType::SW:
+            return 0;
+    }
+    throw std::invalid_argument(__FUNCTION__);
 }
 
 unsigned Tomasulo::get_rs_num_for_instruction_type(InstructionType i_type)
@@ -173,8 +234,6 @@ unsigned Tomasulo::get_rs_num_for_instruction_type(InstructionType i_type)
         case InstructionType::MULT:
             lower = 5, upper = 7;
             break;
-        default:
-            throw std::invalid_argument(__FUNCTION__);
     }
 
     for (unsigned i = lower; i < upper; ++i)
@@ -188,4 +247,14 @@ unsigned Tomasulo::get_rs_num_for_instruction_type(InstructionType i_type)
 ReservationStation& Tomasulo::reservation_station(unsigned r)
 {
     return this->_reservation_station[r - 1];
+}
+
+bool Tomasulo::reservation_station_is_empty()
+{
+    for (const ReservationStation& rs : this->_reservation_station) {
+        if (rs.busy) {
+            return false;
+        }
+    }
+    return true;
 }

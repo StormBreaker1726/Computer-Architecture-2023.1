@@ -9,9 +9,9 @@
 
 int main()
 {
-    Tomasulo t;
-
     std::ifstream input_file("./inputs/compiled/1");
+    /* std::ofstream output_file("tomasulo.txt"); */
+    Tomasulo t(std::cout);
 
     if (!input_file.is_open()) {
         std::cerr << "Falha ao arquivo de entrada\n";
