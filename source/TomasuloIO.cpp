@@ -49,8 +49,8 @@ void Tomasulo::register_dump()
 void Tomasulo::memory_dump()
 {
     this->out << "=============== MEMORY ===============\n";
-    for (mips_word_t i = 0; i < ARRAYSIZE(this->data_memory); i += 4)
-        this->out << i << ": " << (mips_int_t) _read_word(this->data_memory, i) << '\n';
+    for (unsigned addr = 0; addr < ARRAYSIZE(this->data_memory); addr += 4)
+        this->out << addr << ": " <<  this->read_fp_from_memory(addr) << '\n';
     this->out << "=======================================\n";
 }
 
@@ -67,14 +67,15 @@ void Tomasulo::reservation_station_dump()
 {
     extern const char *const reservation_station_names[];
 
-    this->out << "====================== RESERVATION STATION ======================\n";
-    this->out << "Name\tBusy\tOp\tVj\tVk\tQj\tQk\tAddress\tCycles\n";
-    this->out << "-----------------------------------------------------------------\n";
+    this->out << "========================= RESERVATION STATION =========================\n";
+    this->out << "Name\tBusy\tOp\tVj\tVk\tQj\tQk\tAddr\tCycles\n";
+    this->out << "-----------------------------------------------------------------------\n";
     for (size_t i = 0; i < ARRAYSIZE(this->_reservation_station); ++i) {
         const ReservationStation& rs = this->_reservation_station[i];
 
-        this->out << reservation_station_names[i] << '\t' << rs.busy << '\t' << get_instruction_name(rs.operation) << '\t' << rs.vj << '\t' << rs.vk
-                  << '\t' << rs.qj << '\t' << rs.qk << '\t' << rs.a << '\t' << rs.cycles_executing << '\n';
+        this->out << reservation_station_names[i] << '\t' << rs.busy << '\t' << get_instruction_name(rs.operation) << '\t'
+                  << interpret_word_as_float(rs.vj) << '\t' << interpret_word_as_float(rs.vk) << '\t' << rs.qj << '\t' << rs.qk << '\t' << rs.a
+                  << '\t' << rs.cycles_executing << '\n';
     }
-    this->out << "=================================================================\n";
+    this->out << "=======================================================================\n";
 }

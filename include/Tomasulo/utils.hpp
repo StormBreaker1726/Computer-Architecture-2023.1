@@ -24,6 +24,11 @@ inline mips_word_t _read_word(mips_byte_t mem[], mips_word_t pos)
     return *reinterpret_cast<mips_word_t *>(mem + pos);
 }
 
+inline mips_word_t interpret_float_as_word(mips_float_t f)
+{
+    return *reinterpret_cast<mips_word_t *>(&f);
+}
+
 inline mips_float_t interpret_word_as_float(mips_word_t w)
 {
     return *reinterpret_cast<mips_float_t *>(&w);

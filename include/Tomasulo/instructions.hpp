@@ -60,8 +60,12 @@ inline mips_word_t instruction_imm_i(mips_word_t instruction)
 
 inline mips_word_t instruction_imm_s(mips_word_t instruction)
 {
-    /* Pro tipo S IMM: [31-25]*/
-    return (instruction >> 25) & 0x3F;
+    /* Dividido em duas partes: */
+    /* [31-25] */
+    mips_word_t imm_11_5 = (instruction >> 25) & 0x3F;
+    /* [11-7] */
+    mips_word_t imm_4_0 = (instruction >> 7) & 0x1F;
+    return (imm_11_5 << 5) | imm_4_0;
 }
 
 inline InstructionType type_from_funct(mips_word_t instruction)

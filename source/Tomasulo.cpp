@@ -141,15 +141,15 @@ void Tomasulo::issue()
                     this->reservation_station(r).vj = this->registers[rs];
                     this->reservation_station(r).qj = 0;
                 }
-                // TODO(igolt): puta que pariu immediate é de fuder
-                // this->reservation_station(r).a = immediate
 
                 if (i_type == InstructionType::LW)
                 {
+                    this->reservation_station(r).a = instruction_imm_i(instruction);
                     this->register_status[rd] = r;
                 }
                 else
                 {
+                    this->reservation_station(r).a = instruction_imm_s(instruction);
                     if (this->register_status[rt])
                     {
                         this->reservation_station(r).qk = this->register_status[rt];
@@ -176,7 +176,7 @@ void Tomasulo::write_result()
         ReservationStation& rs = this->reservation_station(rs_num);
 
         if (rs.busy && rs.cycles_executing >= instruction_execution_cycles(rs.operation)) {
-            mips_word_t result = this->get_reservation_station_result(rs);
+            mips_float_t result = this->get_reservation_station_result(rs);
             rs.busy = false;
 
             for (ReservationStation& rs2 : this->_reservation_station) {
@@ -202,21 +202,31 @@ void Tomasulo::write_result()
 
 mips_word_t Tomasulo::get_reservation_station_result(const ReservationStation& rs)
 {
+    mips_float_t result;
+
     switch (rs.operation) {
         case InstructionType::ADD:
-            return rs.vj + rs.vk;
+            result = interpret_word_as_float(rs.vj) + interpret_word_as_float(rs.vk);
+            break;
         case InstructionType::SUB:
-            return rs.vj - rs.vk;
+            result = interpret_word_as_float(rs.vj) - interpret_word_as_float(rs.vk);
+            break;
         case InstructionType::MULT:
-            return rs.vj * rs.vk;
+            result = interpret_word_as_float(rs.vj) * interpret_word_as_float(rs.vk);
+            break;
         case InstructionType::DIV:
-            return rs.vj / rs.vk;
+            result = interpret_word_as_float(rs.vj) / interpret_word_as_float(rs.vk);
+            break;
         case InstructionType::LW:
-            return _read_word(this->data_memory, rs.a);
+            result = this->read_fp_from_memory(rs.a);
+            break;
         case InstructionType::SW:
+            this->write_fp_to_memory(interpret_word_as_float(rs.vk), rs.a);
             return 0;
+        default:
+            throw std::invalid_argument(__FUNCTION__);
     }
-    throw std::invalid_argument(__FUNCTION__);
+    return interpret_float_as_word(result);
 }
 
 unsigned Tomasulo::get_rs_num_for_instruction_type(InstructionType i_type)
