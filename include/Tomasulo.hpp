@@ -32,6 +32,9 @@ public:
     void clear();
     void load_instructions(std::istream& input_file);
 
+    void write_fp_to_memory(mips_float_t f, mips_word_t address);
+    mips_float_t read_fp_from_memory(mips_word_t address);
+
 private:
     void register_dump();
     void memory_dump();
