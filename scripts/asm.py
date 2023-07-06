@@ -55,9 +55,9 @@ def reg_name_to_reg_num(reg_name: str):
 def to_s_imm(imm: int):
     # Divided in two parts:
     # Length 7 (31-25)
-    imm_11_5 = (imm & 0x7F) << 25
+    imm_11_5 = ((imm >> 5) & 0x7F) << 25
     # Length 5 (11-7)
-    imm_4_0 = imm & 0x1F << 7
+    imm_4_0 = (imm & 0x1F) << 7
     return imm_11_5 | imm_4_0
 
 def to_i_imm(imm: int):
@@ -133,7 +133,7 @@ def fdiv_d_bin(rd, rs1, rs2):
     rs2 = reg_name_to_reg_num(rs2)
     return r_instruction(0xD, rs2, rs1, 0, rd, 0x53)
 
-def make_instruction(instruction: int | str, comment: str | None):
+def make_instruction(instruction: int | str, comment: str | None = None):
     if type(instruction) == int:
         instruction = f"{instruction:032b}"
     if comment and len(comment) > 1:
