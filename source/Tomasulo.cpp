@@ -1,7 +1,3 @@
-//
-// Created by joao-oliveira on 21/04/23.
-//
-
 #include "Tomasulo/utils.hpp"
 #include "utils.hpp"
 
@@ -25,6 +21,7 @@ void Tomasulo::clear()
     CLEAR(this->registers);
     CLEAR(this->register_status);
     CLEAR(this->_reservation_station);
+    CLEAR(this->data_memory);
 }
 
 void Tomasulo::load_instructions(std::istream& input_file)
@@ -59,6 +56,7 @@ void Tomasulo::start(bool step_by_step)
         this->register_dump();
         this->reservation_station_dump();
         if (step_by_step) {
+            this->out.flush();
             press_enter();
         }
         ++this->clock_cycle;
@@ -272,7 +270,7 @@ bool Tomasulo::reservation_station_is_empty()
 
 void Tomasulo::write_fp_to_memory(mips_float_t f, mips_word_t address)
 {
-    if (address >= ARRAYSIZE(this->data_memory)) {
+    if (!this->memory_address_is_valid(address)) {
         throw std::invalid_argument(__FUNCTION__);
     }
     *reinterpret_cast<mips_word_t *>(&this->data_memory[address]) = *reinterpret_cast<mips_word_t *>(&f);
@@ -280,8 +278,13 @@ void Tomasulo::write_fp_to_memory(mips_float_t f, mips_word_t address)
 
 mips_float_t Tomasulo::read_fp_from_memory(mips_word_t address)
 {
-    if (address >= ARRAYSIZE(this->data_memory)) {
+    if (!this->memory_address_is_valid(address)) {
         throw std::invalid_argument(__FUNCTION__);
     }
     return *reinterpret_cast<mips_float_t *>(&this->data_memory[address]);
+}
+
+bool Tomasulo::memory_address_is_valid(mips_word_t address)
+{
+    return address <= ARRAYSIZE(this->data_memory) - 4;
 }

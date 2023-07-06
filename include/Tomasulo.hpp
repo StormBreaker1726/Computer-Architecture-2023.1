@@ -1,7 +1,3 @@
-//
-// Created by joao-oliveira on 21/04/23.
-//
-
 #pragma once
 
 #include "Tomasulo/utils.hpp"
@@ -56,4 +52,5 @@ private:
     ReservationStation& reservation_station(unsigned r);
 
     bool reservation_station_is_empty();
+    bool memory_address_is_valid(mips_word_t address);
 };

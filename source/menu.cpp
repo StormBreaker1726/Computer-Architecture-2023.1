@@ -1,15 +1,50 @@
 #include "menu.hpp"
 #include "utils.hpp"
 
-static void not_yet_implemented(Tomasulo& t)
-{
-    ((void) t);
-    std::cout << "Not yet implemented\n";
-}
-
-static inline std::ostream& print_error(const char *s, std::ostream& out = std::cout)
+static inline std::ostream& print_error(const std::string& s, std::ostream& out = std::cout)
 {
     return out << "******* " << s << " *******\n";
+}
+
+static void start_execution(Tomasulo& t)
+{
+    std::string input;
+    std::cout << "Step by step (y/N)? ";
+    std::getline(std::cin, input);
+
+    t.start(input == "y" || input == "Y");
+}
+
+static void read_instructions_from_file(Tomasulo& t)
+{
+    std::string   filepath;
+    std::ifstream inputfile;
+
+    std::cout << "Enter intructions file path: ";
+    std::getline(std::cin, filepath);
+
+    inputfile.open(filepath);
+
+    if (!inputfile.is_open())
+    {
+        print_error("Could not open file: `" + filepath + "`");
+        return;
+    }
+    t.load_instructions(inputfile);
+}
+
+static void type_instructions(Tomasulo& t)
+{
+    std::cout << "Press CTRL-D (or any other key combination that represents EOF) when you are done.\n";
+    t.load_instructions(std::cin);
+    std::cin.clear();
+    std::cin.unget();
+}
+
+static void reset(Tomasulo& t)
+{
+    std::cout << "Memory and registers clear\n";
+    t.clear();
 }
 
 void menu(Tomasulo& tomasulo)
@@ -23,10 +58,10 @@ void menu(Tomasulo& tomasulo)
         const char *title;
         void (*exec)(Tomasulo&);
     } options[] = {
-        { "Start execution", not_yet_implemented },
-        { "Read instructions from file", not_yet_implemented },
-        { "Type instructions", not_yet_implemented },
-        { "Reset (clean memory and registers)", not_yet_implemented },
+        { "Start execution"                   , start_execution             },
+        { "Read instructions from file"       , read_instructions_from_file },
+        { "Type instructions"                 , type_instructions           },
+        { "Reset (clean memory and registers)", reset                       },
     };
 
     while (true)
@@ -48,7 +83,10 @@ void menu(Tomasulo& tomasulo)
             else if (i == EXIT_OPTION)
                 break;
             else
+            {
+                clear_istream(std::cin);
                 options[i - 1].exec(tomasulo);
+            }
         }
         else
         {
