@@ -97,7 +97,7 @@ void Tomasulo::issue()
         mips_word_t rs, rt, rd;
 
         rs = instruction_rs1(instruction);
-        rt = instruction_rs2(instruction);
+        rt = instruction_rs2(instruction) + Tomasulo::FP_REG_OFFSET;
         rd = instruction_rd(instruction) + Tomasulo::FP_REG_OFFSET;
         switch (i_type)
         {
@@ -106,7 +106,6 @@ void Tomasulo::issue()
             case InstructionType::MULT:
             case InstructionType::DIV:
                 rs += Tomasulo::FP_REG_OFFSET;
-                rt += Tomasulo::FP_REG_OFFSET;
 
                 if (this->register_status[rs])
                 {
@@ -131,7 +130,6 @@ void Tomasulo::issue()
                 break;
             case InstructionType::LW:
             case InstructionType::SW:
-
                 if (this->register_status[rs])
                 {
                     this->reservation_station(r).qj = this->register_status[rs];
@@ -218,10 +216,10 @@ mips_word_t Tomasulo::get_reservation_station_result(const ReservationStation& r
             result = interpret_word_as_float(rs.vj) / interpret_word_as_float(rs.vk);
             break;
         case InstructionType::LW:
-            result = this->read_fp_from_memory(rs.a);
+            result = this->read_fp_from_memory(rs.vj + rs.a);
             break;
         case InstructionType::SW:
-            this->write_fp_to_memory(interpret_word_as_float(rs.vk), rs.a);
+            this->write_fp_to_memory(interpret_word_as_float(rs.vk), rs.vj + rs.a);
             return 0;
         default:
             throw std::invalid_argument(__FUNCTION__);
