@@ -31,15 +31,20 @@ public:
     void clear();
     void load_instructions(std::istream& input_file);
 
+    bool memory_address_is_valid(mips_word_t address);
+
     void write_fp_to_memory(mips_float_t f, mips_word_t address);
     mips_float_t read_fp_from_memory(mips_word_t address);
 
-private:
-    void register_dump();
-    void memory_dump();
-    void print_instruction_queue();
-    void reservation_station_dump();
+    void write_to_f_register(mips_word_t f_num, mips_float_t value);
+    void write_to_x_register(mips_word_t x_num, mips_word_t value);
 
+    void register_dump(std::ostream& outstream = std::cout);
+    void memory_dump(std::ostream& outstream = std::cout);
+    void print_instruction_queue(std::ostream& outstream = std::cout);
+    void reservation_station_dump(std::ostream& outstream = std::cout);
+
+private:
     void issue();
     void execute();
     void write_result();
@@ -52,5 +57,4 @@ private:
     ReservationStation& reservation_station(unsigned r);
 
     bool reservation_station_is_empty();
-    bool memory_address_is_valid(mips_word_t address);
 };

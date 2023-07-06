@@ -47,6 +47,70 @@ static void reset(Tomasulo& t)
     t.clear();
 }
 
+static void write_value_to_mem(Tomasulo& t)
+{
+    mips_word_t  address;
+    mips_float_t value;
+
+    std::cout << "Type memory address (0-508) and value: ";
+    std::cin >> address >> value;
+
+    if (t.memory_address_is_valid(address))
+    {
+        t.write_fp_to_memory(address, value);
+    }
+    else
+    {
+        print_error("Invalid memory address");
+    }
+}
+
+static void write_value_to_f_reg(Tomasulo& t)
+{
+    mips_word_t  f;
+    mips_float_t value;
+
+    std::cout << "Type the number of the fp register and the value: ";
+    std::cin >> f >> value;
+
+    if (f < 32)
+    {
+        t.write_to_f_register(f, value);
+    }
+    else
+    {
+        print_error("Invalid register number");
+    }
+}
+
+static void write_value_to_x_reg(Tomasulo& t)
+{
+    mips_word_t x;
+    mips_word_t value;
+
+    std::cout << "Type the number of the x register and the value: ";
+    std::cin >> x >> value;
+
+    if (x < 32)
+    {
+        t.write_to_x_register(x, value);
+    }
+    else
+    {
+        print_error("Invalid register number");
+    }
+}
+
+static void print_registers_content(Tomasulo& t)
+{
+    t.register_dump();
+}
+
+static void print_memory_content(Tomasulo& t)
+{
+    t.memory_dump();
+}
+
 void menu(Tomasulo& tomasulo)
 {
 #define EXIT_OPTION         0UL
@@ -58,10 +122,15 @@ void menu(Tomasulo& tomasulo)
         const char *title;
         void (*exec)(Tomasulo&);
     } options[] = {
-        { "Start execution"                   , start_execution             },
-        { "Read instructions from file"       , read_instructions_from_file },
-        { "Type instructions"                 , type_instructions           },
-        { "Reset (clean memory and registers)", reset                       },
+        { "Start execution"                         , start_execution             },
+        { "Read instructions from file"             , read_instructions_from_file },
+        { "Type instructions"                       , type_instructions           },
+        { "Print register content"                  , print_registers_content     },
+        { "Print memory content"                    , print_memory_content        },
+        { "Write content to floating point register", write_value_to_f_reg        },
+        { "Write content to integer register"       , write_value_to_x_reg        },
+        { "Write content to memory"                 , write_value_to_mem          },
+        { "Reset (clean memory and registers)"      , reset                       },
     };
 
     while (true)

@@ -33,49 +33,49 @@ static const char *get_instruction_name(InstructionType type)
     return "";
 }
 
-void Tomasulo::register_dump()
+void Tomasulo::register_dump(std::ostream& outstream)
 {
     extern const char *const registers_name[];
 
-    this->out << "============== REGISTERS ==============\n";
-    this->out << "Name\tQi\tValue\n";
+    outstream << "============== REGISTERS ==============\n";
+    outstream << "Name\tQi\tValue\n";
     for (unsigned i = 0; i < Tomasulo::FP_REG_OFFSET; i++)
-        this->out << registers_name[i] << "\t" << this->register_status[i] << '\t' << this->registers[i] << '\n';
+        outstream << registers_name[i] << "\t" << this->register_status[i] << '\t' << this->registers[i] << '\n';
     for (unsigned i = Tomasulo::FP_REG_OFFSET; i < ARRAYSIZE(this->registers); ++i)
-        this->out << registers_name[i] << '\t' << this->register_status[i] << '\t' << interpret_word_as_float(this->registers[i]) << '\n';
-    this->out << "=======================================\n";
+        outstream << registers_name[i] << '\t' << this->register_status[i] << '\t' << interpret_word_as_float(this->registers[i]) << '\n';
+    outstream << "=======================================\n";
 }
 
-void Tomasulo::memory_dump()
+void Tomasulo::memory_dump(std::ostream& outstream)
 {
-    this->out << "=============== MEMORY ===============\n";
+    outstream << "=============== MEMORY ===============\n";
     for (unsigned addr = 0; addr < ARRAYSIZE(this->data_memory); addr += 4)
-        this->out << addr << ": " <<  this->read_fp_from_memory(addr) << '\n';
-    this->out << "=======================================\n";
+        outstream << addr << ": " <<  this->read_fp_from_memory(addr) << '\n';
+    outstream << "=======================================\n";
 }
 
-void Tomasulo::print_instruction_queue()
+void Tomasulo::print_instruction_queue(std::ostream& outstream)
 {
     for (auto& instruction : this->instructions_queue) {
         std::bitset<SIZE_IN_BITS(mips_word_t)> bin(instruction);
 
-        this->out << bin << '\n';
+        outstream << bin << '\n';
     }
 }
 
-void Tomasulo::reservation_station_dump()
+void Tomasulo::reservation_station_dump(std::ostream& outstream)
 {
     extern const char *const reservation_station_names[];
 
-    this->out << "========================= RESERVATION STATION =========================\n";
-    this->out << "Name\tBusy\tOp\tVj\tVk\tQj\tQk\tAddr\tCycles\n";
-    this->out << "-----------------------------------------------------------------------\n";
+    outstream << "========================= RESERVATION STATION =========================\n";
+    outstream << "Name\tBusy\tOp\tVj\tVk\tQj\tQk\tAddr\tCycles\n";
+    outstream << "-----------------------------------------------------------------------\n";
     for (size_t i = 0; i < ARRAYSIZE(this->_reservation_station); ++i) {
         const ReservationStation& rs = this->_reservation_station[i];
 
-        this->out << reservation_station_names[i] << '\t' << rs.busy << '\t' << get_instruction_name(rs.operation) << '\t'
+        outstream << reservation_station_names[i] << '\t' << rs.busy << '\t' << get_instruction_name(rs.operation) << '\t'
                   << interpret_word_as_float(rs.vj) << '\t' << interpret_word_as_float(rs.vk) << '\t' << rs.qj << '\t' << rs.qk << '\t' << rs.a
                   << '\t' << rs.cycles_executing << '\n';
     }
-    this->out << "=======================================================================\n";
+    outstream << "=======================================================================\n";
 }

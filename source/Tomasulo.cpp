@@ -52,11 +52,12 @@ void Tomasulo::start(bool step_by_step)
         this->write_result();
 
         this->out << "\nClock cycle: " << this->clock_cycle << '\n';
-        this->memory_dump();
-        this->register_dump();
-        this->reservation_station_dump();
+        this->memory_dump(this->out);
+        this->register_dump(this->out);
+        this->reservation_station_dump(this->out);
         if (step_by_step) {
             this->out.flush();
+            std::cout << "Press enter...";
             press_enter();
         }
         ++this->clock_cycle;
@@ -287,4 +288,20 @@ mips_float_t Tomasulo::read_fp_from_memory(mips_word_t address)
 bool Tomasulo::memory_address_is_valid(mips_word_t address)
 {
     return address <= ARRAYSIZE(this->data_memory) - 4;
+}
+
+void Tomasulo::write_to_f_register(mips_word_t f_num, mips_float_t value)
+{
+    if (f_num >= 32) {
+        throw std::invalid_argument(__FUNCTION__);
+    }
+    this->registers[f_num + Tomasulo::FP_REG_OFFSET] = interpret_float_as_word(value);
+}
+
+void Tomasulo::write_to_x_register(mips_word_t x_num, mips_word_t value)
+{
+    if (x_num >= 32) {
+        throw std::invalid_argument(__FUNCTION__);
+    }
+    this->registers[x_num] = value;
 }
