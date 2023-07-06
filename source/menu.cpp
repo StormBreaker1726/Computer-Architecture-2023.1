@@ -57,7 +57,7 @@ static void write_value_to_mem(Tomasulo& t)
 
     if (t.memory_address_is_valid(address))
     {
-        t.write_fp_to_memory(address, value);
+        t.write_fp_to_memory(value, address);
     }
     else
     {
